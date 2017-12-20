@@ -1,55 +1,67 @@
 //////////////////////////////////////////////////
 // Author/s:			Chris Murphy
 // Date created:		18/12/17
-// Date last edited:	19/12/17
+// Date last edited:	20/12/17
 //////////////////////////////////////////////////
-#define MAX_PALINDROME_LENGTH 256
-#include <iostream>
+#include <algorithm>
 #include <exception>
+#include <iostream>
+#include <locale>
 #include <sstream>
 #include <string>
 
-using namespace std;
-
-// Returns whether or not the provided string is a valid palindrome.
-bool GetIfValidPalindrome(const string& str)
+unsigned int GetMaxPalindromeLength()
 {
-	// Ensures that the length of the provided string is valid.
-	if (str.length() < 2 || str.length() > MAX_PALINDROME_LENGTH)
-	{
-		// The string stream used to create the error message of the exception to throw.
-		ostringstream errorMsg;
-		errorMsg << "Error - the length of the palindrome string must be greater than 1 character and less than " << MAX_PALINDROME_LENGTH << " characters.";
-		throw invalid_argument(errorMsg.str());
-	}
-
-	return false;
+	return 256;
 }
 
-// The entry point of the program.
+bool GetIfValidPalindrome(std::string str)
+{
+	if (str.length() < 2 || str.length() > GetMaxPalindromeLength())
+	{
+		std::ostringstream error_msg;
+		error_msg << "Error - the length of the palindrome string must be greater than 1 character and less than " << GetMaxPalindromeLength() << " characters.";
+		throw std::invalid_argument(error_msg.str());
+	}
+	
+	// Removes all spaces from the string.
+	str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+
+	// The two halves of the string to be checked - if the length of the string is an odd number, the middle character is omitted from both substrings because it doesn't affect whether the full string is a valid palindrome.
+	const std::string str_first_half = str.substr(0, str.length() / 2);
+	std::string str_second_half = str.substr((str.length() / 2) + ((str.length() % 2 == 0) ? 0 : 1), std::string::npos);
+
+	std::reverse(str_second_half.begin(), str_second_half.end());
+
+	return (str_first_half == str_second_half);
+}
+
 int main()
 {
 	while (true)
 	{
-		cout << "Enter palindrome to be checked: ";
+		std::cout << "Enter palindrome to be checked or 'N' to exit the program: ";
 
-		// The string used to store the input of the user.
-		string input;
-		getline(cin, input);
+		std::string user_input;
+		std::getline(std::cin, user_input);
+
+		if (std::tolower(user_input[0], std::locale()) == 'n')
+			break;
 
 		try
 		{
-			GetIfValidPalindrome(input);
+			if (GetIfValidPalindrome(user_input))
+				std::cout << "The inputted string is a valid palindrome.";
+			else
+				std::cout << "The inputted string is not a valid palindrome.";
 		}
-		catch (invalid_argument& e)
+		catch (std::invalid_argument& e)
 		{
-			cout << e.what() << endl;
-		}	
+			std::cout << e.what();
+		}
 
-		cout << endl; 
+		std::cout << std::endl << std::endl;
 	}
-
-	// TODO - add valid exit input which breaks the while loop.
 
 	return 0;
 }
